@@ -89,4 +89,34 @@ t <- trees %>%
 
 nrow(t)
 
+# 2nd problem
+seq1 = seq(from = 1, to = nrow(trees)*1, by = 1)
+seq2 = seq(from = 1, to = nrow(trees)*3, by = 3)
+seq3 = seq(from = 1, to = nrow(trees)*5, by = 5)
+seq4 = seq(from = 1, to = nrow(trees)*7, by = 7)
+seq5 = c(seq(from = 1, to = nrow(trees)*.5, by = .5), nrow(trees)*.5+.5)
+
+# this also works for seq 5
+# seq5 = rep(1:nrow(trees)*.5, each=2)*2 
+# seq5 = seq5[-646:-324]
+
+t <- trees %>% 
+  mutate(trees = str_dup(trees, 1000),
+         n1 = seq1,
+         n2 = seq2, 
+         n3 = seq3, 
+         n4 = seq4, 
+         n5 = seq5) %>% 
+  gather(seq, number, n1:n5) %>% 
+  filter(!(seq == "n5" & row_number() %% 2 == 0)) %>% # remove every other row for the fifth slope
+  mutate(tree = ifelse(str_detect(str_sub(trees, number, number), "#"), 1, 0)) %>% # identifying moments when crashing into a tree
+  group_by(seq) %>% 
+  mutate(sum = sum(tree)) %>% # summing the crashes
+  ungroup() %>% 
+  distinct(seq, sum) %>% 
+  spread(seq, sum) %>% 
+  mutate(produce = n1*n2*n3*n4*n5)
+
+t$produce
+
 #### Dec 4 ####
