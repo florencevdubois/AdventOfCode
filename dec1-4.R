@@ -76,4 +76,17 @@ passw <- passwords %>%
 nrow(passw)
 
 #### Dec 3 ####
+trees<- read_table("data/trees.txt", col_names = "trees")
+
+seq = seq(from = 1, to = nrow(trees)*3, by = 3)
+
+t <- trees %>% 
+  mutate(pattern = str_dup(trees, 1000),
+         n = seq,
+         tree = str_sub(pattern, n, n),
+         crash = ifelse(tree == "#", 1, 0)) %>% 
+  filter(crash == 1)
+
+nrow(t)
+
 #### Dec 4 ####
