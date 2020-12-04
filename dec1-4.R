@@ -120,3 +120,53 @@ t <- trees %>%
 t$produce
 
 #### Dec 4 ####
+passports <- read.table("data/passports.txt",  blank.lines.skip=F, comment.char = "") # the # characters were sneaky here!
+
+passp <- passports %>% 
+  mutate(V1 = ifelse(V1 == "", 0, as.character(V1)),
+         ID = ifelse(V1 == 0, row_number(), NA)) %>% 
+  fill(ID, .direction = "up") %>% 
+  filter(V1 != 0) %>% 
+  group_by(ID) %>% 
+  gather(value, key, V1:V5) %>% 
+  filter(key != "") %>% 
+  mutate(valid = ifelse(str_detect(key, "byr|iyr|eyr|hgt|hcl|ecl|pid"),1,0),
+         sum = sum(valid)) %>% 
+  ungroup() %>% 
+  distinct(ID, sum) %>% 
+  filter(sum == 7)
+
+# 2nd problem
+passp <- passports %>% 
+  mutate(V1 = ifelse(V1 == "", 0, as.character(V1)),
+         ID = ifelse(V1 == 0, row_number(), NA)) %>% 
+  fill(ID, .direction = "up") %>% 
+  filter(V1 != 0) %>% 
+  group_by(ID) %>% 
+  gather(value, key, V1:V5) %>% 
+  filter(key != "") %>% 
+  separate(key, c("key", "value"), ":") %>% 
+  mutate(string_count = str_count(value),
+         height = ifelse(key == "hgt", str_remove_all(value, "[a-z]"), NA),
+         measure = ifelse(key == "hgt", str_remove_all(value, "[0-9]"), NA),
+         valid_value = ifelse(key == "byr" & (value >= 1920 & value <= 2002), 1, 0),
+         valid_value = ifelse(key == "iyr" & (value >= 2010 & value <= 2020), 1, valid_value),
+         valid_value = ifelse(key == "eyr" & (value >= 2020 & value <= 2030), 1, valid_value),
+         valid_value = ifelse(key == "hgt" & measure == "cm" & (height >= 150 & height <= 193), 1, valid_value),
+         valid_value = ifelse(key == "hgt" & measure == "in" & (height >= 59 & height <= 76), 1, valid_value),
+         valid_value = ifelse(key == "hcl" & str_detect(value, "#") & string_count == 7, 1, valid_value),
+         valid_value = ifelse(key == "ecl" & str_detect(value, "amb|blu|brn|gry|grn|hzl|oth"), 1, valid_value),
+         valid_value = ifelse(key == "pid" & string_count == 9, 1, valid_value)) %>% 
+  filter(key != "cid") %>% 
+  group_by(ID) %>% 
+  mutate(valid_pass = sum(valid_value)) %>% 
+  ungroup() %>% 
+  filter(valid_pass == 7) %>% 
+  distinct(ID)
+  
+  
+  
+  
+  
+  
+  
