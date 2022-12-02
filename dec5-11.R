@@ -70,8 +70,255 @@ forms <- read.table("data/forms.txt",  blank.lines.skip=F) %>%
 
 nrow(forms)
 
+#### dec 7 ####
+df <- read_table("data/bags.txt", col_names = F) %>% # get colors containing shiny gold
+  separate(X1, c("beg", "end"), sep = "contain") 
+
+level0 <- df %>% 
+  filter(str_detect(end, "shiny gold")) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg)) %>%
+  distinct(beg) %>% 
+  pull()
+
+level1 <- df %>% 
+  mutate(valid = str_count(beg, paste(level0, collapse = "|")),
+         valid2 = str_count(end, paste(level0, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg)) %>% 
+  distinct(beg) %>% 
+  pull()
+
+level2 <- df %>% 
+  mutate(valid = str_count(beg, paste(level1, collapse = "|")),
+         valid2 = str_count(end, paste(level1, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg)) %>% 
+  distinct(beg) %>% 
+  pull()
+
+level3 <- df %>% 
+  mutate(valid = str_count(beg, paste(level2, collapse = "|")),
+         valid2 = str_count(end, paste(level2, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level4 <- df %>% 
+  mutate(valid = str_count(beg, paste(level3, collapse = "|")),
+         valid2 = str_count(end, paste(level3, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level5 <- df %>% 
+  mutate(valid = str_count(beg, paste(level4, collapse = "|")),
+         valid2 = str_count(end, paste(level4, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level6 <- df %>% 
+  mutate(valid = str_count(beg, paste(level5, collapse = "|")),
+         valid2 = str_count(end, paste(level5, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level7 <- df %>% 
+  mutate(valid = str_count(beg, paste(level6, collapse = "|")),
+         valid2 = str_count(end, paste(level6, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level8 <- df %>% 
+  mutate(valid = str_count(beg, paste(level7, collapse = "|")),
+         valid2 = str_count(end, paste(level7, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+level9 <- df %>% 
+  mutate(valid = str_count(beg, paste(level8, collapse = "|")),
+         valid2 = str_count(end, paste(level8, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg))%>% 
+  distinct(beg) %>% 
+  pull()
+
+bags <- df %>% 
+  mutate(valid = str_count(beg, paste(level7, collapse = "|")),
+         valid2 = str_count(end, paste(level7, collapse = "|"))) %>% 
+  filter(valid >= 1 | valid2 >=  1) %>%
+  mutate(beg = str_remove_all(beg, "[0-9]|\\bbags?\\b|\\.")) %>% 
+  mutate(beg = str_trim(beg)) %>% 
+  distinct(beg) 
+
+# 2nd problem
+dictionary <- read_table("data/bags.txt", col_names = F) %>% # get colors containing shiny gold
+  separate(X1, c("bag", "content"), sep = "contain") %>% 
+  mutate(content = str_split(content, ","),
+         bag = str_remove_all(bag, "[0-9]|\\bbags?\\b|\\."))
+
+level1 <- dictionary %>% filter(str_detect(bag, "shiny gold")) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+list <- c(level1$content)
+
+level2 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag))%>% as.data.frame()
+
+list <- c(level2$content)
+
+level3 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag))%>% as.data.frame()
+
+list <- c(level3$content)
+
+level4 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+list <- c(level4$content)
+
+level5 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+list <- c(level5$content)
+
+level6 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+list <- c(level6$content)
+
+level7 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+list <- c(level7$content)
+
+level8 <- dictionary %>% filter(str_detect(bag, paste(list, collapse = "|"))) %>% 
+  unnest(content) %>% 
+  mutate(contain = str_extract_all(content, "[0-9]"), 
+         contain = ifelse(str_detect(content, "no"), 0, contain),
+         content = str_remove_all(content, "[0-9]|\\bbags?\\b|\\."),
+         content = str_trim(content),
+         bag = as.character(bag)) %>% as.data.frame()
+
+level8
+
+## count
+level8 <- level8 %>% mutate(count = 1) %>% distinct(bag, count)
+
+level7 <- level7 %>%
+  mutate(count1 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count1 = sum(count1))  %>% 
+  distinct(bag, count1) %>% 
+  full_join(level8) %>% 
+  mutate(count = count*count1) # check
+
+level6 <- level6 %>%
+  mutate(count2 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count2 = sum(count2))  %>% 
+  distinct(bag, count2) %>% 
+  full_join(level7)
+
+level5 <- level5 %>%
+  mutate(count3 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count3 = sum(count3))  %>% 
+  distinct(bag, count3) %>% 
+  full_join(level6)
+
+level4 <- level4 %>%
+  mutate(count4 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count4 = sum(count4))  %>% 
+  distinct(bag, count4) %>% 
+  full_join(level5)
+
+level3 <- level3 %>%
+  mutate(count5 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count5 = sum(count5))  %>% 
+  distinct(bag, count5) %>% 
+  full_join(level4)
+
+level2 <- level2 %>%
+  mutate(count6 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count6 = sum(count6))  %>% 
+  distinct(bag, count6) %>% 
+  full_join(level3)
+
+level1 <- level1 %>%
+  mutate(count7 = ifelse(contain == 0, 1, as.numeric(contain))) %>%
+  group_by(bag) %>%
+  mutate(count7 = sum(count7))  %>% 
+  distinct(bag, count7) %>% 
+  full_join(level2)
 
 
 
 
 
+
+
+
+
+
+
+
+
+  
